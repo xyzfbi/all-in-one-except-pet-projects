@@ -1,0 +1,232 @@
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+const int button1Pin = 2;
+const int button2Pin = 3;
+int buttonState1;
+int buttonState2;
+
+
+#define MAX_LENGTH 16
+#define MAX_NUM 5
+
+// Book structure
+struct Book {
+  char name[MAX_LENGTH];
+  float price;
+  int pages;
+  char author[MAX_LENGTH];
+  struct {
+    int year;
+    char publisher_name[MAX_LENGTH];
+    char city[MAX_LENGTH];
+  } publisher;
+};
+
+// Function to print centered text
+void PrintCenter(const char *title) {
+  int terminalWidth = 16; // Set this based on your display width
+  int strLength = strlen(title);
+  int padding = (terminalWidth - strLength) / 2;
+  for (int i = 0; i < padding; i++) {
+    Serial.print(" ");
+  }
+  Serial.println(title);
+}
+
+// Function to print book details
+void PrintBook(const Book &book, int order) {
+  char num[MAX_LENGTH];
+  snprintf(num, sizeof(num), "Book #%d", order + 1);
+  PrintCenter(num);
+
+  Serial.print("Name:\t");
+  Serial.println(book.name);
+
+  Serial.print("Price:\t");
+  Serial.println(book.price);
+
+  Serial.print("Pages:\t");
+  Serial.println(book.pages);
+
+  Serial.print("Author:\t");
+  Serial.println(book.author);
+
+  Serial.println("Publisher:");
+  Serial.print("\tYear: ");
+  Serial.println(book.publisher.year);
+  Serial.print("\tName:\t");
+  Serial.println(book.publisher.publisher_name);
+  Serial.print("\tCity:\t");
+  Serial.println(book.publisher.city);
+}
+
+
+void FindBook(Book *books, int total, Book *res, int n) {
+  char town[MAX_LENGTH];
+  int year = 0;
+  int count = 1;
+  bool flag = false;
+  while (Serial.available() > 0) {
+    Serial.read();
+  }
+  Serial.println("Enter the city where the book was published:");
+  while (Serial.available() == 0) {
+    // Wait for user input
+  }
+  Serial.readBytesUntil('\n', town, MAX_LENGTH);
+  while (Serial.available() > 0) {
+    Serial.read();
+  }
+  Serial.println("Enter the year books were published after:");
+  while (Serial.available() == 0) {
+  }
+  year = Serial.parseInt();
+  while (Serial.available() > 0) {
+    Serial.read();
+  }
+  for (int i = 0; i < total; i++) {
+    if (strcmp(books[i].publisher.city, town) == 0 || books[i].publisher.year > year) {
+      res[n] = books[i];
+      n++;
+      count++;
+      flag = true;
+    }
+  }
+
+  if (!flag) {
+    Serial.print("No books published in ");
+    Serial.print(town);
+    Serial.print(" after ");
+    Serial.println(year);
+  }
+}
+
+void setup() {
+  Serial.begin(9600);
+  struct Book res[MAX_NUM];
+  struct Book books[MAX_NUM];
+  int order = 0;
+  int n, i = 0;
+
+
+  while (true) {
+
+    if (order >= MAX_NUM) {
+      Serial.println("You have reached the max number of books.");
+      break;
+    }
+
+    Serial.print("Enter details for Book #");
+    Serial.println(order + 1);
+
+    while (Serial.available() > 0) {
+      Serial.read();
+    }
+    Serial.println("1. Add name:");
+    while (Serial.available() == 0) {}
+    Serial.readBytesUntil('\n', books[order].name, MAX_LENGTH);
+    while (Serial.available() > 0) {
+      Serial.read();
+    }
+
+    Serial.println("2. Add price:");
+    while (Serial.available() == 0) {}
+    books[order].price = Serial.parseFloat();
+    while (Serial.available() > 0) {
+      Serial.read();
+    }
+
+    Serial.println("3. Add number of pages:");
+    while (Serial.available() == 0) {}
+    books[order].pages = Serial.parseInt();
+    while (Serial.available() > 0) {
+      Serial.read();
+    }
+
+    Serial.println("4. Add author:");
+    while (Serial.available() == 0) {}
+    Serial.readBytesUntil('\n', books[order].author, MAX_LENGTH);
+    while (Serial.available() > 0) {
+      Serial.read();
+    }
+
+    Serial.println("5. Add year of publication:");
+    while (Serial.available() == 0) {}
+    books[order].publisher.year = Serial.parseInt();
+    while (Serial.available() > 0) {
+      Serial.read();
+    }
+
+    Serial.println("6. Add publisher name:");
+    while (Serial.available() == 0) {}
+    Serial.readBytesUntil('\n', books[order].publisher.publisher_name, MAX_LENGTH);
+    while (Serial.available() > 0) {
+      Serial.read();
+    }
+
+    Serial.println("7. Add publisher city:");
+    while (Serial.available() == 0) {}
+    Serial.readBytesUntil('\n', books[order].publisher.city, MAX_LENGTH);
+    while (Serial.available() > 0) {
+      Serial.read();
+    }
+
+    PrintBook(books[order], order);
+
+    order++;
+
+    Serial.println("Enter 'q' to quit adding books, or any other key to continue:");
+    while (Serial.available() == 0) {}
+    String choice = Serial.readString();
+    choice.trim();
+    if (choice == "q" || choice == "Q") {
+      break;
+    }
+
+
+
+  }
+  Serial.println("Part 2: Find the book published in the city you want and after the year you want:");
+  FindBook(books, order, res, n);
+
+  lcd.init();
+  lcd.backlight();
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(res[i].name);
+  lcd.setCursor(0, 1);
+  lcd.print(res[i].price);
+  lcd.print(" $");
+  while (i >= 0 && i < order) {
+    buttonState1 = digitalRead(button1Pin);
+    buttonState2 = digitalRead(button2Pin);
+
+    if (buttonState1 == HIGH && i < order - 1) {
+      i++;
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print(res[i].name);
+      lcd.setCursor(0, 1);
+      lcd.print(res[i].price);
+      lcd.print(" $");
+      delay(500);
+    }
+
+
+    if (buttonState2 == HIGH && i > 0) {
+      i--;
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print(res[i].name);
+      lcd.setCursor(0, 1);
+      lcd.print(res[i].price);
+      lcd.print(" $");
+      delay(500);
+    }
+  }
+}
+
+void loop() {
+}
