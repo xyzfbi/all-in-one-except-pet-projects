@@ -1,0 +1,168 @@
+#include <stdio.h>
+#include <string.h>
+#define MAX_LENGTH 100
+#define MAX_NUM 100
+#define WIDTH 100
+#define CLR getchar()
+
+// Объявление структуры
+struct Book {
+    char name[MAX_LENGTH];
+    float price;
+    int pages;
+    char author[MAX_LENGTH];
+    struct {
+        int year;
+        char publisher_name[MAX_LENGTH];
+        char city[MAX_LENGTH];
+    } publisher;
+};
+
+void PrintCenter(const char *title) {
+    int terminalWidth = WIDTH;
+    int strLength = strlen(title);
+    int padding = (terminalWidth - strLength) / 2;
+    if (padding > 0) {
+        printf("%*s%s\n", padding, "", title);
+    } else {
+        printf("%s\n", title);
+    }
+}
+
+void PrintBook(const struct Book book, int order) {
+    char num[MAX_LENGTH];
+    sprintf(num, "\nBook #%d", order + 1);
+    PrintCenter(num);
+
+    printf("Name:\t%s\n", book.name);
+    printf("Price:\t%.2f\n", book.price);
+    printf("Pages:\t%d\n", book.pages);
+    printf("Author:\t%s\n", book.author);
+
+    puts("Publisher:");
+    printf("\tYear: %d\n", book.publisher.year);
+    printf("\tName:\t%s\n", book.publisher.publisher_name);
+    printf("\tCity:\t%s\n", book.publisher.city);
+}
+
+int FindBook(struct Book *books, int total) {
+    char town[MAX_LENGTH];
+    char file_path_output[MAX_LENGTH] = "C:\\Users\\XMAS\\Desktop\\";
+    char file_output[MAX_LENGTH];
+
+    printf("Please enter name of output file:\n");
+    scanf("%s", file_output);
+    strcat(file_path_output, file_output);
+    strcat(file_path_output, ".txt");
+
+    FILE *output_file = fopen(file_path_output, "w");
+    if (!output_file) {
+        printf("Could not open file %s for writing\n", file_path_output);
+        return 0;
+    }
+
+    int year = 0;
+    int count = 1;
+    int flag = 0;
+    printf("\nEnter the city where book published: ");
+    scanf("%s", town);
+
+    printf("\nEnter the year books published after: ");
+    scanf("%d", &year);
+    CLR;
+
+    for (int i = 0; i < total; i++) {
+        if (strcmp(books[i].publisher.city, town) == 0 || books[i].publisher.year > year) {
+            fprintf(output_file, "\nFound book #%d:\t%s\n", count, books[i].name);
+            count++;
+            flag = 1;
+        }
+    }
+    fclose(output_file);
+    if (flag) {
+        return 1;
+    }
+    if (!flag) {
+        fprintf(output_file, "\nNo books published in %s after %d!\n", town, year);
+        return 0;
+    }
+
+
+
+}
+
+int main(void) {
+    struct Book books[MAX_NUM];
+    int order = 0;
+    char choice;
+
+    printf("Please enter the name of the input file:\n");
+    char file_path_input[MAX_LENGTH] = "C:\\Users\\XMAS\\Desktop\\";
+    char file_name[MAX_LENGTH];
+    scanf("%s", file_name);
+    strcat(file_path_input, file_name);
+    strcat(file_path_input, ".txt");
+
+    FILE *file_input = fopen(file_path_input, "w");
+    if (!file_input) {
+        printf("Could not open file %s for writing\n", file_path_input);
+        return 1;
+    }
+
+    do {
+        if (order >= MAX_NUM) {
+            printf("U have reached the max number of books :( \n");
+            fclose(file_input);
+            return 1;
+        }
+        printf("Enter details for the Book #%d:\n", order + 1);
+        fprintf(file_input, "\nBook #%d:\n", order + 1);
+
+        printf("1. Add name of the Book #%d:\n", order + 1);
+        CLR;
+        gets(books[order].name);
+        fprintf(file_input, "%s\n", books[order].name);
+
+        printf("2. Add price of the Book #%d:\n", order + 1);
+        scanf("%f", &books[order].price);
+        CLR;
+        fprintf(file_input, "%.2f\n", books[order].price);
+
+        printf("3. Add number of pages of the Book #%d:\n", order + 1);
+        scanf("%d", &books[order].pages);
+        CLR;
+        fprintf(file_input, "%d\n", books[order].pages);
+
+        printf("4. Add author of the Book #%d:\n", order + 1);
+        gets(books[order].author);
+        fprintf(file_input, "%s\n", books[order].author);
+
+        printf("5. Add year when Book #%d was published:\n", order + 1);
+        scanf("%d", &books[order].publisher.year);
+        CLR;
+        fprintf(file_input, "%d\n", books[order].publisher.year);
+
+        printf("6. Add the name of publisher of the Book #%d:\n", order + 1);
+        gets(books[order].publisher.publisher_name);
+        fprintf(file_input, "%s\n", books[order].publisher.publisher_name);
+
+        printf("7. Add the city of publisher of the Book #%d:\n", order + 1);
+        gets(books[order].publisher.city);
+        fprintf(file_input, "%s\n", books[order].publisher.city);
+
+        PrintBook(books[order], order);
+
+        order++;
+
+        printf("\nIf you want to stop adding books, enter 'q', else enter any symbol: ");
+        choice = getchar();
+        CLR;
+    } while (choice != 'q');
+
+    fclose(file_input);
+
+    printf("\nPart 2. Find the book published in the city you want and after the year you want\n");
+    int check = FindBook(books, order);
+    check ? printf("\nAll right! Books were find!") : printf("\nZero books were find :(\n");
+    return 0;
+}
