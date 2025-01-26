@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define MAX_VERTICES 1001
+#define MAX_EDGES 500000
+
+typedef struct {
+    int edges[MAX_EDGES][2];
+    int edge_count;
+    int vertex_count;
+} Graph;
+
+void Add_edge(Graph *graph, int f, int t) {
+    graph->edges[graph->edge_count][0] = f;
+    graph->edges[graph->edge_count][1] = t;
+    graph->edge_count++;
+}
+
+void dfs(int t, Graph *graph, int *visited, int *comp, int *component_size) {
+    visited[t] = 1; //вершина посещена
+    comp[*(component_size)++] = t; // вставляем вершину которая входит в компоненту связности и увеличиваем на 1
+    for (int i = 0; i < graph->edge_count; i++) {
+        int f = -1; //фаст зачек сущуествует ли связь с вершиной f от t
+        if (graph->edges[i][0] == t) {
+            f = graph->edges[i][1]; // если да то f присваивается номер вершины
+        }
+        else if (graph->edges[i][1] == t) {
+            f = graph->edges[i][0];
+        }
+
+        if (f != -1 && visited[f] == 0) { // если найдена но еще не посещена то запускаем рекурсивно функции для поиска связей этой вершины f
+            dfs(f, graph, visited, comp, component_size);
+        }
+    }
+}
+int main()
+{
+    int vertex, edge;
+
+    scanf("%d %d", &vertex, &edge); // задается количество ребер и вершин
+    Graph graph;
+    graph.vertex_count = vertex; //
+    graph.edge_count = 0;
+
+    for (int i = 0; i < edge; i++) {
+        int f, t;
+        scanf("%d %d", &f, &t); // записываются ребра и добавляются в структуру функцией
+        Add_edge(&graph, f, t);
+    }
+    int visited[MAX_VERTICES] = {0}; // задаем все посещенные вершины 0
+    int comp[MAX_VERTICES]; // массив хранения компонент связности вершин
+    int component_size = 0;
+
+    dfs(1, &graph, visited, comp, &component_size); // запускаем обход для первой вершины, результат - все вершины в компоненте связности
+    printf("%d\n", component_size); // количество вершин в компоненте
+    for (int i = 0; i < component_size; i++) {
+        printf("%d ", comp[i]); // все вершины в компоненте
+    }
+    printf("\n");
+    return 0;
+
+}
