@@ -1,0 +1,81 @@
+#include <SPI.h>
+#include <SD.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <ctype.h>
+#define MAX_BUFFER 128
+
+void setup() {
+  int chipSelect = 10;
+  Serial.begin(9600);
+  while (!Serial) {
+  }
+
+  Serial.println("Initializing SD card...");
+  if (!SD.begin(chipSelect)) {
+    Serial.println("Error: SD card not found!");
+    return;
+  }
+  Serial.println("SD card initialized.");
+}
+
+int even() {
+  File file_in = SD.open("task2.txt", FILE_READ);
+  char filename_out[MAX_BUFFER];
+  int flag = 0;
+
+  if (!file_in) {
+    Serial.println("Error opening task2.txt");
+    return 0;
+  }
+
+  Serial.println("Please enter the name of the output file: ");
+  while (Serial.available() == 0){}
+  String filename = Serial.readString();
+  filename.trim();
+  filename.toCharArray(filename_out, MAX_BUFFER);
+  strcat(filename_out, ".txt");
+
+  File file_out = SD.open(filename_out, FILE_WRITE);
+
+
+  while (file_in.available()) {
+    char buffer[MAX_BUFFER];
+    file_in.readBytesUntil('\n', buffer, MAX_BUFFER - 1);
+    buffer[MAX_BUFFER - 1] = '\0';
+
+    for (size_t i = 0; i < strlen(buffer); i++) {
+      if (isDigit(buffer[i]) && (buffer[i] - '0') % 2 == 0) {
+        flag = 1;
+        continue;
+      }
+      file_out.print(buffer[i]);
+    }
+    file_out.println();
+  }
+
+  file_in.close();
+  file_out.close();
+
+  if (!flag) {
+    Serial.println("File wasn't changed (no even digits found)");
+    return 0;
+  }
+
+  file_out = SD.open(filename_out, FILE_READ);
+  Serial.println("File written:");
+  while (file_out.available()) {
+    Serial.write(file_out.read());
+    
+  }
+  file_out.close();
+  return 1;
+}
+
+void loop(void) {
+  if (even()) {
+    Serial.print("\nOperation completed successfully.\n");
+  }
+  delay(100000);
+}
