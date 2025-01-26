@@ -1,0 +1,118 @@
+#include <SPI.h>
+#include <SD.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <ctype.h>
+
+#define READ_SIZE 256
+
+double Finder(const char *filename) {
+  File file = SD.open(filename, FILE_READ);
+  double min_abs = -1;
+
+  if (!file) {
+    return 0;
+  }
+
+  while (file.available()) {
+    char buffer[READ_SIZE];
+    file.readBytesUntil('\n', buffer, READ_SIZE - 1);
+    buffer[READ_SIZE - 1] = '\0';
+
+    double num = fabs(atof(buffer));
+    if (min_abs < 0 || num < min_abs) {
+      min_abs = num;
+    }
+  }
+  file.close();
+
+  return min_abs;
+}
+
+int checkDouble(char *str) {
+  char *endptr;
+  strtod(str, &endptr);
+  return *endptr == '\0' && *str != '\0';
+}
+
+char *createfile() {
+  static char file[READ_SIZE];
+  Serial.println("Enter the name of the file you want to create: ");
+  while (Serial.available() == 0) {
+  }
+
+  String filename = Serial.readString();
+  filename.trim();
+  filename.toCharArray(file, READ_SIZE);
+  strcat(file, ".txt");
+
+  File fp = SD.open(file, FILE_WRITE);
+  if (!fp) {
+    return NULL;
+  }
+
+  Serial.println("File has been created");
+  Serial.println("Enter numbers (type 'q' to quit):");
+
+  int count_right = 0;
+  while (true) {
+    if (Serial.available()) {
+      String digit = Serial.readString();
+      digit.trim(); //убирает пробелы
+
+      if (digit == "q") {
+        break;
+      }
+
+      if (checkDouble(digit.c_str())) {
+        fp.println(digit);
+        count_right++;
+      } else {
+        Serial.println("Error writing to file: Not a valid number");
+      }
+    }
+  }
+
+  fp.close();
+
+  if (!count_right) {
+    return NULL;
+  }
+
+  fp = SD.open(file, FILE_READ);
+  while (fp.available()) {
+    Serial.write(fp.read());
+  }
+  fp.close();
+
+  return file;
+}
+
+void setup() {
+  int chipSelect = 10;
+  Serial.begin(9600);
+  while (!Serial) {
+  }
+
+  Serial.println("Initializing SD card...");
+  if (!SD.begin(chipSelect)) {
+    Serial.println("Error: SD card not found!");
+    return;
+  }
+  Serial.println("SD card initialized.");
+}
+
+void loop() {
+  char *filename = createfile();
+  if (filename) {
+    double result = Finder(filename);
+    if (result == 0) {
+      Serial.println("There was a problem with the file");
+    } else {
+      Serial.print("The result is: ");
+      Serial.println(result, 6);
+    }
+  }
+  delay(100000);
+}
