@@ -1,0 +1,119 @@
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_LENGTH 100
+#define MAX_NUM 100
+#define WIDTH 100;
+#define CLR getchar();
+//объявление структуры
+struct Book {
+    char name[MAX_LENGTH];
+    float price;
+    int pages;
+    char author[MAX_LENGTH];
+    struct {
+        int year;
+        char publisher_name[MAX_LENGTH];
+        char city[MAX_LENGTH];
+    } publisher;
+};
+
+void PrintCenter(const char *title) {
+    int terminalWidth = WIDTH;
+    int strLength = strlen(title);
+    int padding = (terminalWidth - strLength) / 2;
+    if (padding > 0) {
+        printf("%*s%s\n", padding, "", title);
+    }
+    else {
+        printf("%s\n", title);
+    }
+}
+
+void PrintBook(const struct Book book, int order) {
+    char num[MAX_LENGTH];
+    sprintf(num, "\nBook #%d", order + 1);
+    PrintCenter(num);
+
+    printf("Name:\t%s\n", book.name);
+    printf("Price:\t%.2f\n", book.price);
+    printf("Pages:\t%d\n", book.pages);
+    printf("Author:\t%s\n", book.author);
+
+    puts("Publisher:");
+    printf("\tYear: %d\n", book.publisher.year);
+    printf("\tName:\t%s\n", book.publisher.publisher_name);
+    printf("\tCity:\t%s\n", book.publisher.city);
+}
+void FindBook(struct Book *books, int total) {
+    char town[MAX_LENGTH];
+    int year = 0;
+    int count = 1;
+    int flag = 0;
+    printf("\nEnter the city where book published: ");
+    gets(town);
+
+    printf("\nEnter the year books published after: ");
+    scanf("%d", &year);
+    CLR
+    for (int i = 0; i < total; i++) {
+
+        if (strcmp(books[i].name, town) == 0 || books[i].publisher.year > year) {
+            printf("\nFound book #%d:\t%s\n", count, books[i].name);
+            count++;
+            flag = 1;
+        }
+    }
+    if (!flag) {
+        printf("\nNot books published in the %s after the %d !\n", town, year);
+    }
+}
+
+int main(void) {
+    struct Book books[MAX_NUM];
+    int order = 0;
+    char choice;
+    do {
+        if (order > MAX_NUM) {
+            printf("U have been reached max number of books :(  \n");
+            return 1;
+        }
+        printf("Enter details for the Book #%d:\n", order + 1);
+
+        printf("1. Add name of the Book #%d:\n", order + 1);
+        gets(books[order].name);
+
+        printf("2. Add price of the Book #%d:\n", order + 1);
+        scanf("%f", &books[order].price);
+        CLR
+        printf("3. Add number of pages of the Book #%d:\n", order + 1);
+        scanf("%d", &books[order].pages);
+        CLR
+        printf("4. Add an author of the Book #%d:\n", order + 1);
+        gets(books[order].author);
+
+        printf("5. Add year when Book #%d was published:\n", order + 1);
+        scanf("%d", &books[order].publisher.year);
+        CLR
+
+        printf("6. Add the name of publisher of the Book #%d:\n", order + 1);
+        gets(books[order].publisher.publisher_name);
+
+        printf("7. Add the city of publisher of the Book #%d:\n", order + 1);
+        gets(books[order].publisher.city);
+
+
+        PrintBook(books[order], order);
+
+        order++;
+
+
+        printf("\nIf ure wanna stop to adding books, plz enter 'q', else enter any symbol: ");
+        choice = getchar();
+        CLR
+    } while (choice != 'q');
+
+    printf("Part 2. Find the book published in the city u want and after year u want");
+    FindBook(books, order);
+    return 0;
+}
