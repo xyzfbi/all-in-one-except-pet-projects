@@ -1,0 +1,88 @@
+#define lmax 10
+void setup() {
+Serial.begin(9600);
+Serial.print("*************************************\n");
+Serial.print("* Лабораторная работа №2.Задание №1 *\n");
+Serial.print("*************************************\n\n");
+
+}
+
+void loop() {
+  int k, n, m, i, j, new_m;
+  int A[lmax][lmax];
+  int flag_zero;
+  Serial.println("Введите число строк (n) и число столбцов (m) матрицы:");
+  do {
+    Serial.read();
+    while (Serial.available() == 0);
+    n = Serial.parseInt();
+    m = Serial.parseInt();
+  } while (n <= 0 || m <= 0 || n > lmax || m > lmax);
+
+  Serial.println("Введите элементы матрицы: ");
+  for (i = 0; i < n; i++)
+  {
+    for (j = 0; j < m; j++) {
+      Serial.read();
+      while (Serial.available() == 0);
+      A[i][j] = Serial.parseInt();
+      Serial.print("Введенный элемент: ");
+      Serial.print(A[i][j]);
+      Serial.println();
+    }
+  }
+  Serial.println("Введенная матрица: ");
+
+  for (i = 0; i < n; i++) 
+  {
+    for (j = 0; j < m; j++) 
+    {
+      Serial.print(A[i][j]);
+      Serial.print("\t");
+    }
+    Serial.println();
+  }
+
+  new_m = 0;
+  for (j = 0; j < m; j++)
+  {
+    flag_zero = 0;
+    for (i = 0; i < n && flag_zero == 0; i++)
+    {
+      if (A[i][j] == 0)
+      {
+        flag_zero = 1;
+      }
+    }
+    if (flag_zero)
+    {
+      for (i = 0; i < n; i++)
+      {
+        A[i][new_m] = A[i][j];
+      }
+      new_m += 1;
+    }
+  }
+  if (new_m == 0) {
+    Serial.print("\nМатрица пуста! Все столбцы были удалены.\n");
+  }
+  else if (new_m == m)
+  {
+    Serial.print("\nМатрица не была изменена, нули присутствовали во всех столбцах");
+  }
+  else {
+    Serial.print("Измененная матрица: \n");
+    for (i = 0; i < n; i++) 
+    {
+      for (j = 0; j < new_m; j++) 
+      {
+      Serial.print(A[i][j]);
+      Serial.print("\t");
+      }
+      Serial.println();
+    }
+  }
+  Serial.read();
+  while (Serial.available() == 0);
+  delay(10000);
+}
