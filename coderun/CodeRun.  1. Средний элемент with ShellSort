@@ -1,0 +1,61 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+void ShellSort(int array[], int n) {
+    int i, j, temp;
+    for (int interval = n /2; interval > 0; interval /= 2) {
+        for (i = interval; i < n; i++) {
+            temp = array[i];
+            for (j = i; j >= interval && array[j - interval] > temp; j -= interval) {
+                array[j] = array[j - interval];
+            }
+            array[j] = temp;
+        }
+    }
+}
+int main()
+{
+    int mas[3];
+    scanf("%d %d %d", &mas[0], &mas[1], &mas[2]);
+    ShellSort(mas, 3);
+    printf("%d\n", mas[1]);
+/*
+     Для чтения входных данных необходимо получить их
+     из стандартного потока ввода (stdin).
+     Данные во входном потоке соответствуют описанному
+     в условии формату. Обычно входные данные состоят
+     из нескольких строк.
+
+     Можно использовать несколько функций для чтения из stdin:
+     * scanf() -- читает данные из потока;
+     * fgets() -- читает строку из потока;
+     * gets() -- читает строку из потока до символа '\n'.
+
+     Чтобы прочитать из строки стандартного потока:
+     * число -- int var; scanf("%d", &var);
+     * строку -- char svar[100]; scanf("%s", svar);
+     * массив чисел известной длины --
+     int len; scanf("%d", &len);
+     int* arr = (int*) malloc(len * sizeof(int));
+     for (int i = 0; i < len; ++i)
+      scanf("%d", &arr[i]);
+     * последовательность слов до конца файла --
+     char word[100];
+     while (scanf("%s", word) == 1) {
+      // do something with word
+     }
+
+     Чтобы вывести результат в стандартный поток вывода (stdout),
+     можно использовать функцию printf().
+
+     Возможное решение задачи "Вычислите сумму A+B":
+
+
+     int a, b;
+     scanf("%d%d", &a, &b);
+     printf("%d\n", a + b);
+*/
+
+     return 0;
+}
