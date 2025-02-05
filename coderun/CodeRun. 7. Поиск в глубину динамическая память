@@ -15,7 +15,6 @@ typedef struct {
     int vertex_count;
 } Graph;
 
-// Function to create a new node
 Node* create_node(int vertex) {
     Node *new_node = (Node*)malloc(sizeof(Node));
     new_node->vertex = vertex;
@@ -23,19 +22,16 @@ Node* create_node(int vertex) {
     return new_node;
 }
 
-// Add an edge to the graph
 void Add_edge(Graph *graph, int f, int t) {
     Node *new_node = create_node(t);
     new_node->next = graph->adj[f];
     graph->adj[f] = new_node;
 
-    // Since the graph is undirected, add the reverse edge
     new_node = create_node(f);
     new_node->next = graph->adj[t];
     graph->adj[t] = new_node;
 }
 
-// Perform iterative DFS
 void iterative_dfs(int start, Graph *graph, int *visited, int *comp, int *component_size) {
     int stack[MAX_VERTICES];
     int top = -1;
@@ -59,7 +55,6 @@ void iterative_dfs(int start, Graph *graph, int *visited, int *comp, int *compon
     }
 }
 
-// Compare function for qsort
 int compare(const void *a, const void *b) {
     return (*(int*)a - *(int*)b);
 }
@@ -84,7 +79,6 @@ int main() {
 
     iterative_dfs(1, &graph, visited, comp, &component_size);
 
-    // Sort the vertices in the connected component
     qsort(comp, component_size, sizeof(int), compare);
 
     printf("%d\n", component_size);
@@ -93,7 +87,6 @@ int main() {
     }
     printf("\n");
 
-    // Free allocated memory
     for (int i = 1; i <= vertex; i++) {
         Node *current = graph.adj[i];
         while (current != NULL) {
